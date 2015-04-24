@@ -1,0 +1,29 @@
+#!/bin/ksh
+
+if (( $# < 1 ))
+then 
+	echo "ERROR: no arguments" 1>&2
+	exit 1
+fi
+
+input="$(ls -p -- "$1"| grep '/' | wc -c)"
+if (( input < 1 ))
+then
+  exit 0
+fi
+
+set +f
+buf=$IFS
+IFS='/'
+list="$(ls -dm -- */ | sed 's#/,##g')
+set -f
+for dir in $list
+do
+  d="$(ls -p -- "$dir" | grep '/' | wc -c)"
+  if (( d > 1 ))
+  then
+    continue
+  fi
+  f="$(ls -- "$dir" | wc -c)"
+  (( f > 1 )) && echo "$dir"
+done
