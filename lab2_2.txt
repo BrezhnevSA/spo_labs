@@ -1,0 +1,28 @@
+#!/bin/ksh
+# вывести список имён каталогов в указанном каталоге, 
+# содержащих файлы, но не имеющих подкаталогов
+
+if (( $# < 1 ))
+then 
+	echo "ERROR: no arguments" 1>&2
+	exit 1
+fi
+
+set -f
+buf=$IFS
+IFS='/'
+if [[ $1 = /* ]]
+then 
+	namedir="$1"
+else
+	namedir=" /$1"
+fi
+answ="$(gfind -H "$namedir" -mindepth 1 -maxdepth 1 -links -3 -type d ! -empty -printf %f/)"
+if [[ -z $answ ]]
+then
+	IFS=$buf
+	exit 0
+fi
+cd "$(/bin/pwd)" "$1" >&-
+ls -1db -- $answ
+IFS=$buf

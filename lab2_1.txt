@@ -1,0 +1,25 @@
+set -x
+f="${1:?no argument}"
+if [[ $1 = -* ]]
+then
+	f=" /$f"
+fi
+
+gfind "$f" -maxdepth 0 ! -type d -printf "8#%m %u %G" | p u gfind
+(( p = ${p:?no such file or access denied} & 8#444))
+: "$p |$u| $g"
+typeset -i8 p
+case "$p" in
+	8#444) cond='1';;
+	8#44) cond='$3 == 0 || $1 != "'"$u"'"';;
+	8#404) cond='$3 == 0 || $1 != "'"$u"'" || ($4 != "'"$g"'" && gu !~ "," $1 ",")';;
+	8#440) cond='$3 == 0 || $1 != "'"$u"'" || $4 != "'"$g"'" || gu ~ "," $1 ","';;
+	8#4) cond='$3 == 0 || ($1 != "'"$u"'" && $4 != "'"$g"'" && gu !~ "," $1 ",")';;
+	8#40) cond='$3 == 0 || ($1 != "'"$u"'" && ($4 == "'"$g"'" || gu ~ "," $1 ","))';;
+	8#400) cond='$3 == 0 || $1 != "'"$u"'"';;
+	8#0) cond='$3 == 0';;
+	*) echo "ERROR" 1>&2
+	   exit 1;;
+esac
+{ getent group | nawk -F: '{if ($3==g) print "," $4 ","} END {print "\n";}' ORS= g="$g"
+getent passwd ;} | nawk -F: '{if (NR == 1) gu=$0; else if ("'$cond'") print "|" $1 "|";}'
