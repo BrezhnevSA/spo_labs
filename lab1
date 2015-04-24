@@ -1,0 +1,81 @@
+#!/bin/bash
+logfile="$HOME"/lab1_err
+while 
+	echo "Выберите пункт меню:
+1 - Текущая директория
+2 - Содержимое текущего каталога
+3 - Создать каталог
+4 - Предоставить всем право на запись в каталог
+5 - Убрать всем право на запись в каталог
+6 - Выход
+Введите команду"
+	read keynum || exit 0
+do
+case "$keynum" in
+
+1)#	Текущая директория
+		basename "$PWD" 2>>$logfile  || echo "ОШИБКА" 2>&1;;
+
+2)#	Содержимое текущего каталога
+		ls -al 2>>$logfile  || echo "ОШИБКА" 2>&1;;
+
+3)#	Создать каталог
+		echo "Введите имя каталога"
+		buf=$IFS
+		IFS=""
+		set -f
+		read -r namedir
+		if [[  "$namedir" = "~/"* ]];
+		then 
+			namedir=$(echo $namedir | sed 's/^~\/\(.*\)/\1/');
+			namedir="$HOME"/"$namedir";
+		fi
+		mkdir -- "$namedir" 2>>$logfile || echo "ОШИБКА: неверное имя каталога" 2>&1
+		IFS=$buf
+		set +f;;
+
+4)#	Предоставить всем право на запись в каталог
+		echo "Введите имя каталога"
+		buf=$IFS
+		IFS=""
+		set -f
+		read -r namedir
+		if [[  "$namedir" = "~/"* ]];
+		then 
+			namedir=$(echo $namedir | sed 's/^~\/\(.*\)/\1/');
+			namedir="$HOME"/"$namedir";
+		fi
+		if test -d "$namedir";
+			then chmod a+w "$namedir" 2>>$logfile || echo "ОШИБКА: неверное имя каталога" 2>&1
+		else
+			echo "ОШИБКА: Не каталог" 2>&1
+		fi
+		IFS=$buf
+		set +f;;
+
+5)#	Убрать всем право на запись в каталог
+		echo "Введите имя каталога"
+		buf=$IFS
+		IFS=""
+		set -f
+		read -r namedir
+		if [[  "$namedir" = "~/"* ]];
+		then 
+			namedir=$(echo $namedir | sed 's/^~\/\(.*\)/\1/');
+			namedir="$HOME"/"$namedir";
+		fi
+		if test -d "$namedir";
+			then chmod a-w "$namedir" 2>>$logfile  || echo "ОШИБКА: неверное имя каталога" 2>&1
+		else
+			echo "ОШИБКА: Не каталог" 2>&1
+		fi
+		IFS=$buf
+		set +f;;
+
+6)#	Выход
+		exit 0;;
+
+*)# Неверная команда
+		echo "Неверная команда";;
+esac
+done
